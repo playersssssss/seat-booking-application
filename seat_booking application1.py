@@ -19,13 +19,14 @@ def generate_unique_booking_reference():
             return reference
 
 
-# Function to display the menu
+# Function to display the menu options
 def show_menu():
     print("\nApache Airlines Seat Booking System")
     print("1. Check availability of seat")
     print("2. Book a seat")
-    print("3. Show booking state")
-    print("4. Exit program")
+    print("3. Free a seat")
+    print("4. Show booking state")
+    print("5. Exit program")
 
 
 # Function to check seat availability
@@ -36,7 +37,7 @@ def check_availability(seats):
     if seats[row][col] == 'F':
         print(f"Seat {seat_number} is available.")
     elif seats[row][col] in unique_references:
-        print(f"Seat {seat_number} is already booked.")
+        print(f"Seat {seat_number} is already booked with reference {seats[row][col]}.")
     else:
         print(f"Seat {seat_number} is not available for booking.")
 
@@ -55,8 +56,8 @@ def book_seat(seats):
         database[booking_reference] = {
             'passport_number': passport_number,
             'name': name,
-            'seat_row': row + 1,
-            'seat_col': chr(ord('A') + col)
+            'seat_row': row + 1,  # Store row number (1-indexed)
+            'seat_col': chr(ord('A') + col)  # Store column letter (A, B, C, ...)
         }
         # Mark the seat as booked with the booking reference
         seats[row][col] = booking_reference
@@ -67,17 +68,34 @@ def book_seat(seats):
         print(f"Seat {seat_number} is not available for booking.")
 
 
-# Function to show the current booking state
+# Function to free a booked seat
+def free_seat(seats):
+    seat_number = input("Enter seat number to free (e.g., 1A): ")
+    row = int(seat_number[:-1]) - 1  # Extract the row number from input
+    col = ord(seat_number[-1]) - ord('A')  # Convert seat letter to column index
+    booking_reference = seats[row][col]
+    if booking_reference in unique_references:
+        # Remove the booking reference from the set and database
+        unique_references.remove(booking_reference)
+        del database[booking_reference]
+        # Mark the seat as free
+        seats[row][col] = 'F'
+        print(f"Seat {seat_number} has been freed.")
+    else:
+        print(f"Seat {seat_number} is already free or not available for booking.")
+
+
+# Function to display the current booking state
 def show_booking_state(seats):
     print("Current booking state:")
     for row in range(len(seats)):
         for col in range(len(seats[row])):
-            seat_label = f"{row + 1}{chr(ord('A') + col)}"
+            seat_label = f"{row + 1}{chr(ord('A') + col)}"  # Construct seat label (e.g., 1A, 1B, ...)
             print(f"{seat_label}: {seats[row][col]}", end='  ')
         print()
 
 
-# Main function to run the booking system
+# Main function to run the seat booking system
 def main():
     # Initialize the seats based on the Burak757 floor plan
     seats = [
@@ -92,7 +110,7 @@ def main():
         seats[77][4] = 'S'  # Storage area
         seats[77][5] = 'S'  # Storage area
 
-    # Main loop to show menu and handle user input
+    # Main loop to display menu and handle user input
     while True:
         show_menu()
         choice = input("Enter your choice: ")
@@ -102,12 +120,14 @@ def main():
         elif choice == '2':
             book_seat(seats)
         elif choice == '3':
-            show_booking_state(seats)
+            free_seat(seats)
         elif choice == '4':
+            show_booking_state(seats)
+        elif choice == '5':
             print("Exiting program.")
             break
         else:
-            print("Invalid choice. Please enter a number between 1 and 4.")
+            print("Invalid choice. Please enter a number between 1 and 5.")
 
 
 # Entry point of the script
